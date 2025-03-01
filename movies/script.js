@@ -1,4 +1,4 @@
-const TMDB_API_KEY = 'YOUR_TMDB_API_KEY';
+let TMDB_API_KEY = localStorage.getItem('tmdb_api_key') || '';
 let currentMedia = null;
 let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
 
@@ -6,20 +6,40 @@ let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
 const searchBtn = document.getElementById('searchBtn');
 const backBtn = document.getElementById('backBtn');
 const searchInput = document.getElementById('searchInput');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const saveSettingsBtn = document.getElementById('saveSettings');
+const apiKeyInput = document.getElementById('apiKeyInput');
 
 // Event Listeners
 searchBtn.addEventListener('click', searchMedia);
 backBtn.addEventListener('click', goBack);
+settingsBtn.addEventListener('click', openSettings);
+saveSettingsBtn.addEventListener('click', saveSettings);
 
-// Initialize content on load
+// Initialize
 window.onload = () => {
+    if (!TMDB_API_KEY) {
+        openSettings();
+    } else {
+        loadContent();
+    }
+};
+
+function loadContent() {
     loadSection('trending', 'trending/all/day');
     loadSection('popularMovies', 'movie/popular');
     loadSection('popularShows', 'tv/popular');
     loadHistory();
-};
+}
 
 async function searchMedia() {
+    if (!TMDB_API_KEY) {
+        alert('Please set your TMDB API key in settings first!');
+        openSettings();
+        return;
+    }
+    
     const query = searchInput.value.trim();
     if (!query) return;
 
@@ -203,3 +223,29 @@ function goBack() {
     document.getElementById('playerPage').style.display = 'none';
     loadHistory();
 }
+
+function openSettings() {
+    settingsModal.style.display = 'flex';
+    apiKeyInput.value = TMDB_API_KEY;
+}
+
+function saveSettings() {
+    TMDB_API_KEY = apiKeyInput.value.trim();
+    localStorage.setItem('tmdb_api_key', TMDB_API_KEY);
+    settingsModal.style.display = 'none';
+    loadContent();
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target === settingsModal) {
+        settingsModal.style.display = 'none';
+    }
+}
+
+// Close modal with ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && settingsModal.style.display === 'flex') {
+        settingsModal.style.display = 'none';
+    }
+};
