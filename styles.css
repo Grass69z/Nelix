@@ -608,3 +608,12 @@ body {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(51, 255, 85, 0.3);
 }
+
+.search-results-title {
+    margin-top: 2rem;
+    border-left-color: var(--primary);
+}
+
+.search-results {
+    margin-bottom: 3rem;
+}
