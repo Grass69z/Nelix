@@ -9,9 +9,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Settings Button -->
-        <button class="settings-btn" id="settingsBtn">⚙️</button>
-
         <!-- Settings Modal -->
         <div class="settings-modal" id="settingsModal">
             <div class="settings-content">
@@ -27,10 +24,11 @@
         <!-- Home Page -->
         <div class="home-page" id="homePage">
             <div class="header">
-                <div class="logo">Nelix Watch</div>
+                <a href="#" class="logo" onclick="goHome()">Nelix Watch</a>
                 <div class="search-section">
                     <input type="text" class="search-input" placeholder="Search movies and TV shows..." id="searchInput">
                     <button class="search-btn" id="searchBtn">Search</button>
+                    <button class="settings-btn" id="settingsBtn">⚙️</button>
                 </div>
             </div>
 
@@ -50,20 +48,21 @@
             </div>
         </div>
 
-        <!-- Player Page -->
-        <div class="player-page" id="playerPage">
-            <button class="back-btn" id="backBtn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6"/>
-                </svg>
-                Back
-            </button>
-            <div class="player-container">
-                <iframe class="player-iframe" id="mainPlayer" allowfullscreen></iframe>
-            </div>
-            <div class="tv-controls" id="tvControls"></div>
-        </div>
+        <!-- Details Page -->
+        <div class="details-page" id="detailsPage"></div>
+
+<!-- Player Page -->
+<div class="player-page" id="playerPage">
+    <button class="back-btn" id="backBtn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Back
+    </button>
+    <div class="player-container">
+        <iframe class="player-iframe" id="mainPlayer" allowfullscreen></iframe>
     </div>
+</div>
 
     <script src="script.js"></script>
 </body>
