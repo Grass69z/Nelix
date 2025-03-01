@@ -199,9 +199,19 @@ function getYear(item) {
 }
 
 function goHome() {
+    // Clear search input
+    searchInput.value = '';
+    
+    // Reset to default view
+    goBack();
+    
+    // Ensure all pages are hidden except home
     homePage.style.display = 'block';
     detailsPage.style.display = 'none';
     playerPage.style.display = 'none';
+    
+    // Reload initial content
+    loadContent();
 }
 
 // Settings Functions
@@ -257,22 +267,16 @@ async function searchMedia() {
     }
     
     const query = searchInput.value.trim();
-    if (!query) return;
+    if (!query) {
+        goBack(); // Clear results if empty search
+        return;
+    }
 
     try {
-        const cacheKey = `SEARCH_${query}`;
-        const cachedData = getCachedData(cacheKey);
-        
-        if (cachedData) {
-            displayResults(cachedData);
-            return;
-        }
-
         const response = await fetch(
             `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
         );
         const data = await response.json();
-        setCachedData(cacheKey, data.results);
         displayResults(data.results);
     } catch (error) {
         handleError(error);
@@ -280,16 +284,43 @@ async function searchMedia() {
 }
 
 function displayResults(results) {
-    const grid = document.getElementById('trending');
-    grid.innerHTML = '';
-    grid.parentElement.querySelector('.section-title').textContent = 'Search Results';
-
-    results.forEach(item => {
-        if (['movie', 'tv'].includes(item.media_type)) {
-            const card = createCard(item);
-            grid.appendChild(card);
-        }
+    // Hide all regular content
+    document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
+        el.style.display = 'none';
     });
+    
+    // Show search result sections
+    const homePage = document.getElementById('homePage');
+    const movieGrid = homePage.querySelector('#searchMovies');
+    const showGrid = homePage.querySelector('#searchShows');
+    
+    // Clear previous results
+    movieGrid.innerHTML = '';
+    showGrid.innerHTML = '';
+    
+    // Separate movies and shows
+    const movies = results.filter(item => item.media_type === 'movie');
+    const shows = results.filter(item => item.media_type === 'tv');
+    
+    // Display movie results
+    if(movies.length > 0) {
+        document.getElementById('movieResultsTitle').style.display = 'block';
+        movies.forEach(movie => {
+            const card = createCard(movie);
+            movieGrid.appendChild(card);
+        });
+        movieGrid.style.display = 'grid';
+    }
+    
+    // Display show results
+    if(shows.length > 0) {
+        document.getElementById('showResultsTitle').style.display = 'block';
+        shows.forEach(show => {
+            const card = createCard(show);
+            showGrid.appendChild(card);
+        });
+        showGrid.style.display = 'grid';
+    }
 }
 
 // History Management
@@ -393,14 +424,20 @@ function showPlayerPage() {
 
 // Navigation
 function goBack() {
-    if (playerPage.style.display === 'block') {
-        playerPage.style.display = 'none';
-        detailsPage.style.display = 'block';
-    } else {
-        homePage.style.display = 'block';
-        detailsPage.style.display = 'none';
-    }
-    loadHistory();
+    // Show all regular content
+    document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
+        el.style.display = '';
+    });
+    
+    // Hide search results
+    document.querySelectorAll('.search-results-title, .search-results').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Restore player/page visibility
+    homePage.style.display = 'block';
+    detailsPage.style.display = 'none';
+    playerPage.style.display = 'none';
 }
 
 // Modal Handling
