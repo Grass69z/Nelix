@@ -31,6 +31,7 @@ searchInput.addEventListener('input', debounce(searchMedia, 500));
 
 // Initialize
 window.onload = () => {
+    settingsModal.style.display = 'none';
     if (!TMDB_API_KEY) {
         openSettings();
     } else {
@@ -100,6 +101,12 @@ function debounce(func, timeout = 300) {
         timer = setTimeout(() => func.apply(this, args), timeout);
     };
 }
+
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        searchMedia();
+    }
+});
 
 // Enhanced Card Creation
 function createCard(item) {
