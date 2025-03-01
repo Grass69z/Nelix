@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nelix Watch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Home Page -->
+        <div class="home-page" id="homePage">
+            <div class="header">
+                <div class="logo">Nelix Watch</div>
+                <div class="search-section">
+                    <input type="text" class="search-input" placeholder="Search movies and TV shows..." id="searchInput">
+                    <button class="search-btn" id="searchBtn">Search</button>
+                </div>
+            </div>
+
+            <!-- Content Sections -->
+            <div class="content-sections">
+                <h2 class="section-title">Continue Watching</h2>
+                <div class="grid" id="historyGrid"></div>
+
+                <h2 class="section-title">Trending Now</h2>
+                <div class="grid" id="trending"></div>
+
+                <h2 class="section-title">Popular Movies</h2>
+                <div class="grid" id="popularMovies"></div>
+
+                <h2 class="section-title">Popular Shows</h2>
+                <div class="grid" id="popularShows"></div>
+            </div>
+        </div>
+
+        <!-- Player Page -->
+        <div class="player-page" id="playerPage">
+            <button class="back-btn" id="backBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+                Back
+            </button>
+            <div class="player-container">
+                <iframe class="player-iframe" id="mainPlayer" allowfullscreen></iframe>
+            </div>
+            <div class="tv-controls" id="tvControls"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
