@@ -248,4 +248,4 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && settingsModal.style.display === 'flex') {
         settingsModal.style.display = 'none';
     }
-};
+}); 
