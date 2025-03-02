@@ -64,6 +64,15 @@ function setCachedData(key, data) {
     localStorage.setItem(key, JSON.stringify(cacheItem));
 }
 
+function obfuscateText(text) {
+  if (!text) return '';
+  return text.split('').map(char => {
+    // Preserve spaces between words
+    if (char === ' ') return '<span class="space"></span>';
+    return `<span>${char}</span>`;
+  }).join('');
+}
+
 // Performance Optimized Functions
 async function loadContent() {
     trendingItems = await loadSection('trending', 'trending/all/day', 'TRENDING');
@@ -125,7 +134,8 @@ function startHeroCarousel() {
             const nextItem = trendingItems[currentIndex];
             heroCard.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${nextItem.backdrop_path})`;
             heroCard.querySelector('.hero-overlay h1').textContent = nextItem.title || nextItem.name;
-            heroCard.querySelector('.hero-overlay p').textContent = nextItem.overview;
+heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.overview)
+  .replace(/(<\/span>)(?=\s*<span class="space">)/g, '$1 '); 
             // Update click event so it goes to the correct movie/show
             heroCard.onclick = () => {
                 currentMedia = {
@@ -163,21 +173,23 @@ function createCard(item) {
     const historyItem = watchHistory.find(h => h.id === item.id && h.type === item.media_type);
     const progress = historyItem ? historyItem.progress : 0;
 
-    card.innerHTML = `
-        ${historyItem ? `<div class="progress-bar" style="width: ${progress}%"></div>` : ''}
-        <img class="poster" 
-            src="${item.poster_path 
-                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
-            alt="${item.title || item.name}"
-            loading="lazy">
-        <div class="card-overlay">
-            <h3 class="card-title">${item.title || item.name}</h3>
-            <div class="media-type">${item.media_type === 'movie' ? 'Movie' : 'TV Show'}</div>
-            <div class="rating">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
-            <div class="year">${getYear(item)}</div>
-        </div>
-    `;
+card.innerHTML = `
+  ${historyItem ? `<div class="progress-bar" style="width: ${progress}%"></div>` : ''}
+  <img class="poster" 
+      src="${item.poster_path 
+          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+          : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
+      alt="${item.title || item.name}"
+      loading="lazy">
+  <div class="card-overlay">
+    <h3 class="card-title">${item.title || item.name}</h3>
+    <div class="media-type">${item.media_type === 'movie' ? 'Movie' : 'TV Show'}</div>
+    <div class="rating">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+    <div class="year">${getYear(item)}</div>
+    <!-- Overview text removed from here -->
+    <div class="noise-overlay"></div>
+  </div>
+`;
 
     card.addEventListener('click', () => {
         currentMedia = {
@@ -538,12 +550,13 @@ function createHeroCard(item) {
     const hero = document.createElement('div');
     hero.className = 'hero-card';
     hero.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
-    hero.innerHTML = `
-        <div class="hero-overlay">
-            <h1>${item.title || item.name}</h1>
-            <p>${item.overview}</p>
-        </div>
-    `;
+hero.innerHTML = `
+  <div class="hero-overlay">
+    <h1>${item.title || item.name}</h1>
+    <p class="text-obfuscate">${obfuscateText(item.overview)}</p>
+    <div class="noise-overlay"></div>
+  </div>
+`;
     // Initially set click event for the first item;
     hero.onclick = () => {
         currentMedia = {
