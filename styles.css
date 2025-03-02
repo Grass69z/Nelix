@@ -167,7 +167,7 @@ body {
 }
 
 .card:hover {
-    transform: translateY(-5px);
+  transform: translateY(-5px);
 }
 
 .poster {
@@ -177,23 +177,23 @@ body {
 }
 
 .card-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
-    padding: 1rem;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: white;
 }
 
 .card:hover .card-overlay {
-    opacity: 1;
+  opacity: 1;
 }
 
 .card-title {
@@ -523,6 +523,58 @@ body {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* === Text Anti-Scraping Styles === */
+.card-overlay p,
+.hero-overlay p,
+.episode-description {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Replace the existing .text-obfuscate rules with this: */
+.text-obfuscate span {
+  display: inline-block;
+  position: relative;
+  transform: rotate(0.001deg);
+}
+
+.text-obfuscate span::after {
+  content: "\200B";
+  position: absolute;
+  left: 0;
+}
+
+/* Specific style for space characters */
+.text-obfuscate span.space {
+  width: 0.3em;
+  transform: none; /* Remove rotation for spaces */
+}
+
+/* Maintain text flow */
+.text-obfuscate {
+  white-space: pre-wrap;
+  word-spacing: normal;
+}
+
+.noise-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,0.02),
+    rgba(255,255,255,0.02) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  mix-blend-mode: overlay;
 }
 
 @media (max-width: 768px) {
