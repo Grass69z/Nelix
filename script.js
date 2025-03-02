@@ -338,44 +338,48 @@ async function searchMedia() {
     }
 }
 
-function displayResults(results) {
-    // Hide all regular content
-    document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
-        el.style.display = 'none';
+// Replace the existing displayResults function with this:
+async function displayResults(results) {
+  // Hide hero section
+  document.getElementById('heroSection').style.display = 'none';
+  
+  // Hide all regular content
+  document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
+    el.style.display = 'none';
+  });
+  
+  // Show search result sections
+  const homePage = document.getElementById('homePage');
+  const movieGrid = homePage.querySelector('#searchMovies');
+  const showGrid = homePage.querySelector('#searchShows');
+  
+  // Clear previous results
+  movieGrid.innerHTML = '';
+  showGrid.innerHTML = '';
+  
+  // Separate movies and shows
+  const movies = results.filter(item => item.media_type === 'movie');
+  const shows = results.filter(item => item.media_type === 'tv');
+  
+  // Display movie results
+  if (movies.length > 0) {
+    document.getElementById('movieResultsTitle').style.display = 'block';
+    movies.forEach(movie => {
+      const card = createCard(movie);
+      movieGrid.appendChild(card);
     });
-    
-    // Show search result sections
-    const homePage = document.getElementById('homePage');
-    const movieGrid = homePage.querySelector('#searchMovies');
-    const showGrid = homePage.querySelector('#searchShows');
-    
-    // Clear previous results
-    movieGrid.innerHTML = '';
-    showGrid.innerHTML = '';
-    
-    // Separate movies and shows
-    const movies = results.filter(item => item.media_type === 'movie');
-    const shows = results.filter(item => item.media_type === 'tv');
-    
-    // Display movie results
-    if (movies.length > 0) {
-        document.getElementById('movieResultsTitle').style.display = 'block';
-        movies.forEach(movie => {
-            const card = createCard(movie);
-            movieGrid.appendChild(card);
-        });
-        movieGrid.style.display = 'grid';
-    }
-    
-    // Display show results
-    if (shows.length > 0) {
-        document.getElementById('showResultsTitle').style.display = 'block';
-        shows.forEach(show => {
-            const card = createCard(show);
-            showGrid.appendChild(card);
-        });
-        showGrid.style.display = 'grid';
-    }
+    movieGrid.style.display = 'grid';
+  }
+  
+  // Display show results
+  if (shows.length > 0) {
+    document.getElementById('showResultsTitle').style.display = 'block';
+    shows.forEach(show => {
+      const card = createCard(show);
+      showGrid.appendChild(card);
+    });
+    showGrid.style.display = 'grid';
+  }
 }
 
 // History Management
@@ -478,21 +482,25 @@ function showPlayerPage() {
 }
 
 // Navigation
+// Replace the existing goBack function with this:
 function goBack() {
-    // Show all regular content
-    document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
-        el.style.display = '';
-    });
-    
-    // Hide search results
-    document.querySelectorAll('.search-results-title, .search-results').forEach(el => {
-        el.style.display = 'none';
-    });
-    
-    // Restore player/page visibility
-    homePage.style.display = 'block';
-    detailsPage.style.display = 'none';
-    playerPage.style.display = 'none';
+  // Show hero section again
+  document.getElementById('heroSection').style.display = 'block';
+  
+  // Show all regular content
+  document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
+    el.style.display = '';
+  });
+  
+  // Hide search results
+  document.querySelectorAll('.search-results-title, .search-results').forEach(el => {
+    el.style.display = 'none';
+  });
+  
+  // Restore page visibility
+  homePage.style.display = 'block';
+  detailsPage.style.display = 'none';
+  playerPage.style.display = 'none';
 }
 
 // Modal Handling
