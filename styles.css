@@ -25,12 +25,14 @@ body {
     padding: 2rem 1.5rem;
 }
 
+/* Header moved above hero */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 2rem;
     flex-wrap: wrap;
+    margin-bottom: 1rem;
 }
 
 .logo {
@@ -41,13 +43,10 @@ body {
     text-decoration: none;
 }
 
-.search-section {
+.search-container {
     flex: 1;
     max-width: 600px;
     margin: 0 auto;
-}
-
-.search-container {
     display: flex;
     align-items: center;
     border: 3px solid rgba(255, 255, 255, 0.1);
@@ -55,10 +54,7 @@ body {
     background-color: #1D1D1D;
     padding: 0 15px;
     height: 50px;
-    flex: 1;
-    max-width: 600px;
     transition: all 0.3s ease;
-    margin: 0 1rem;
 }
 
 .search-container:focus-within {
@@ -118,6 +114,28 @@ body {
 
 .search-button:active svg {
     transform: scale(0.95);
+}
+
+/* Restore original settings button styling */
+#settingsBtn {
+    background: var(--surface);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    padding: 8px;
+}
+.settings-btn {
+    width: 24px;
+    height: 24px;
+    stroke: var(--text-secondary);
+    transition: transform 0.4s ease-in;
+}
+.button:hover .settings-btn {
+    transform: rotate(180deg);
+}
+
+.btn-cont {
+    display: flex;
+    align-items: center;
 }
 
 .content-sections {
@@ -232,7 +250,9 @@ body {
 .details-hero {
     position: relative;
     height: 50vh;
-    background-size: cover;
+    /* Use contain to ensure the full image is visible in details */
+    background-size: contain;
+    background-repeat: no-repeat;
     background-position: center;
     margin-bottom: 2rem;
 }
@@ -384,6 +404,7 @@ body {
     transition: transform 0.2s, box-shadow 0.2s;
     cursor: pointer;
 }
+
 .watch-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(51, 255, 85, 0.4);
@@ -410,65 +431,6 @@ body {
 .play-next-btn:not(:disabled):hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(51, 255, 85, 0.3);
-}
-
-.settings-btn {
-    width: 24px;
-    height: 24px;
-    stroke: var(--text-secondary);
-    transition: transform 0.4s ease-in;
-}
-
-.settings-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
-}
-
-.settings-content {
-    position: relative;
-    background: var(--surface);
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 90%;
-}
-
-.btn-cont {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: auto;
-    background-color: #1e1e1e;
-    border: 3px solid #33ff55;
-    border-radius: 13px;
-    transition: all 0.3s ease;
-}
-
-.button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-}
-
-.button:hover .settings-btn {
-    transform: rotate(180deg);
-}
-
-@keyframes rot {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 .player-page {
@@ -513,10 +475,12 @@ body {
     z-index: 20;
 }
 
+/* Homepage Hero: taller and using cover to fill width */
 .hero-section {
     position: relative;
-    height: 60vh;
+    height: 80vh; /* Taller hero on homepage */
     margin-bottom: 2rem;
+    overflow: hidden;
 }
 
 .hero-card {
@@ -527,6 +491,7 @@ body {
     bottom: 0;
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     transition: opacity 0.5s ease-in-out;
     cursor: pointer;
 }
@@ -579,4 +544,62 @@ body {
         padding: 0.5rem 1rem;
         font-size: 0.9rem;
     }
+}
+
+/* Settings Button Styling */
+#settingsBtn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#settingsBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-btn {
+    width: 24px;
+    height: 24px;
+    stroke: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+#settingsBtn:hover .settings-btn {
+    stroke: var(--primary);
+    transform: rotate(180deg);
+}
+
+/* Settings Modal Styling */
+.settings-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.settings-content {
+    background: var(--surface);
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+}
+
+.save-btn {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 1rem;
 }
