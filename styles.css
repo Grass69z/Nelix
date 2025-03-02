@@ -50,7 +50,7 @@ body {
 .search-container {
     display: flex;
     align-items: center;
-    border: 3px solid rgba(255, 255, 255, 0.1); /* Subtle border by default */
+    border: 3px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     background-color: #1D1D1D;
     padding: 0 15px;
@@ -86,24 +86,13 @@ body {
 .search-divider {
     width: 3px;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.1); /* Subtle divider by default */
+    background-color: rgba(255, 255, 255, 0.1);
     margin: 0 12px;
     transition: all 0.3s ease;
 }
 
 .search-input::placeholder {
-    color: var(--text-secondary); /* #aaaaaa */
-}
-
-.search-btn {
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 8px;
-    background: var(--primary);
-    color: #000;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s;
+    color: var(--text-secondary);
 }
 
 .search-button {
@@ -118,21 +107,17 @@ body {
 .search-button svg {
     width: 22px;
     height: 22px;
-    stroke: var(--text-secondary); /* #aaaaaa */
+    stroke: var(--text-secondary);
     transition: all 0.3s ease;
 }
 
 .search-button:hover svg {
-    stroke: #cccccc; /* Slightly lighter on hover */
+    stroke: #cccccc;
     transform: scale(1.1);
 }
 
 .search-button:active svg {
     transform: scale(0.95);
-}
-
-.search-btn:hover {
-    transform: scale(1.05);
 }
 
 .content-sections {
@@ -149,7 +134,7 @@ body {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -169,21 +154,8 @@ body {
 
 .poster {
     width: 100%;
-    height: 250px;
+    aspect-ratio: 2/3;
     object-fit: cover;
-    loading: lazy;
-}
-
-.card-info {
-    padding: 1rem;
-}
-
-.card-title {
-    font-size: 0.9rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
 .card-overlay {
@@ -192,28 +164,46 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
     padding: 1rem;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s ease-in-out;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    color: white;
 }
 
 .card:hover .card-overlay {
     opacity: 1;
 }
 
-.rating {
-    color: var(--primary);
-    font-weight: 600;
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.media-type {
+    font-size: 0.9rem;
+    color: #ccc;
     margin-bottom: 0.5rem;
 }
 
-.year {
-    color: var(--text-secondary);
+.rating, .year {
     font-size: 0.9rem;
+}
+
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: var(--primary);
+    z-index: 1;
 }
 
 .error-message {
@@ -236,15 +226,53 @@ body {
 .details-page {
     display: none;
     margin-top: 2rem;
+    position: relative;
+}
+
+.details-hero {
+    position: relative;
+    height: 50vh;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 2rem;
+}
+
+.details-hero .hero-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    padding: 2rem;
+    color: white;
+}
+
+.details-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.details-hero p {
+    font-size: 1.2rem;
+    max-width: 800px;
 }
 
 .details-content {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 250px 1fr;
     gap: 2rem;
-    background: var(--surface);
     padding: 2rem;
-    border-radius: 12px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.details-content .poster {
+    width: 100%;
+    max-width: 250px;
+    height: auto;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 8px;
 }
 
 .season-selector {
@@ -276,17 +304,20 @@ body {
 
 .episode-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
     margin-top: 1.5rem;
 }
 
-.episode-card {
+.episode-still-container {
     position: relative;
+}
+
+.episode-card {
+    background: var(--surface);
     border-radius: 8px;
     overflow: hidden;
     transition: transform 0.2s;
-    background: var(--surface);
 }
 
 .episode-date {
@@ -342,6 +373,22 @@ body {
     opacity: 1;
 }
 
+/* Improved and consistent play button style */
+.watch-btn {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.watch-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(51, 255, 85, 0.4);
+}
+
 .play-next-btn {
     background: var(--primary);
     color: #000;
@@ -368,7 +415,7 @@ body {
 .settings-btn {
     width: 24px;
     height: 24px;
-    stroke: var(--text-secondary); /* #aaaaaa */
+    stroke: var(--text-secondary);
     transition: transform 0.4s ease-in;
 }
 
@@ -378,7 +425,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    display: none; /* Start hidden */
+    display: none;
     justify-content: center;
     align-items: center;
     background: rgba(0, 0, 0, 0.9);
@@ -394,29 +441,6 @@ body {
     width: 90%;
 }
 
-.settings-btn {
-    display: block;
-    transition: transform 0.4s ease-in;
-    width: 24px;
-    height: 24px;
-}
-
-.settings-btn {
-    width: 24px;
-    height: 24px;
-    stroke: var(--text-secondary); /* #aaaaaa */
-    transition: transform 0.4s ease-in;
-}
-
-.button:active .settings-btn {
-    animation: rot 0.6s ease-in-out;
-}
-
-@keyframes rot {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 .btn-cont {
     display: flex;
     justify-content: center;
@@ -426,10 +450,6 @@ body {
     border: 3px solid #33ff55;
     border-radius: 13px;
     transition: all 0.3s ease;
-}
-
-.button:hover .settings-btn {
-    transform: rotate(180deg);
 }
 
 .button {
@@ -442,93 +462,13 @@ body {
     align-items: center;
 }
 
-@media (max-width: 768px) {
-    .player-page {
-        padding: 1rem 0.5rem;
-    }
-    
-    .player-container {
-        border-radius: 8px;
-    }
-    
-    .back-btn {
-        margin-bottom: 1rem;
-        padding: 0.6rem 1rem;
-    }
-        .header {
-        gap: 1rem;
-    }
-    
-    .search-container {
-        order: 3;
-        width: 100%;
-        max-width: none;
-        margin: 0;
-        height: 45px;
-    }
-    
-    .btn-cont {
-        margin-left: auto;
-    }
+.button:hover .settings-btn {
+    transform: rotate(180deg);
 }
 
- @media (min-width: 768px) {
-    .details-content {
-        grid-template-columns: 300px 1fr;
-    }
-}
-    
-    .grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-    
-    .poster {
-        height: 200px;
-    }
-    
-    .details-content {
-        grid-template-columns: 1fr;
-    }
-}
-
-.progress-bar {
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary) 0%, #33ffaa 100%);
-    box-shadow: 0 2px 8px rgba(51, 255, 85, 0.2);
-}
-
-.skeleton {
-    background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
-    background-size: 400% 400%;
-    animation: skeleton-loading 1.5s ease-in-out infinite;
-    border-radius: 8px;
-}
-
-@keyframes skeleton-loading {
-    0% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
-}
-
-.meta-info {
-    display: flex;
-    gap: 1.5rem;
-    margin: 1rem 0;
-    flex-wrap: wrap;
-}
-
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-}
-
-.poster-large {
-    width: 100%;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+@keyframes rot {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .player-page {
@@ -559,61 +499,84 @@ body {
     border: none;
 }
 
-.player-controls {
+.back-btn {
+    background: rgba(21, 21, 21, 0.8);
+    color: var(--text);
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 20;
+}
+
+.hero-section {
+    position: relative;
+    height: 60vh;
+    margin-bottom: 2rem;
+}
+
+.hero-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 0.5s ease-in-out;
+    cursor: pointer;
+}
+
+.hero-card.fade {
+    opacity: 0;
+}
+
+.hero-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
-    padding: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    padding: 2rem;
+    color: white;
 }
 
-.player-container:hover .player-controls {
-    opacity: 1;
+.hero-overlay h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
 }
 
-.back-btn {
-    background: var(--surface);
-    color: var(--text);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s;
+.hero-overlay p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.back-btn:hover {
-    border-color: var(--primary);
-    transform: translateX(-3px);
-}
-
-.watch-btn {
-    background: var(--primary);
-    color: #000;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.2s;
-}
-
-.watch-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(51, 255, 85, 0.3);
-}
-
-.search-results-title {
-    margin-top: 2rem;
-    border-left-color: var(--primary);
-}
-
-.search-results {
-    margin-bottom: 3rem;
+@media (max-width: 768px) {
+    .details-content {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+    
+    .details-content .poster {
+        max-width: 220px;
+        margin: 0 auto 2rem;
+    }
+    
+    .episode-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .back-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
 }
