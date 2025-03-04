@@ -39,6 +39,11 @@ window.onload = () => {
     } else {
         loadContent();
     }
+     watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
+       if (!Array.isArray(watchHistory)) {
+        watchHistory = [];
+        localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+    }
 };
 
 // Caching Functions
@@ -396,6 +401,16 @@ async function loadHistory() {
     }
 }
 
+function addToWatchHistory(media) {
+    const existingIndex = watchHistory.findIndex(item => 
+        item.id === media.id && item.type === media.type
+    );
+    
+    if (existingIndex !== -1) watchHistory.splice(existingIndex, 1);
+    watchHistory.unshift({ ...media, progress: 0 });
+    localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+}
+
 // Season/Episode Handling
 function renderSeasonSelector(seasons) {
     const seasonSelect = document.getElementById('seasonSelect');
@@ -464,14 +479,24 @@ function populateEpisodes(seasonData) {
 
 // Player Functions
 function loadEpisode(episodeNumber = 1) {
-    const season = document.getElementById('seasonSelect').value;
     const player = document.getElementById('mainPlayer');
-    player.src = `https://vidsrc.su/embed/tv/${currentMedia.id}/${season}/${episodeNumber}`;
+    if (currentMedia.type === 'movie') {
+        player.src = `https://vidsrc.su/embed/movie/${currentMedia.id}`;
+    } else {
+        const season = document.getElementById('seasonSelect').value;
+        player.src = `https://vidsrc.su/embed/tv/${currentMedia.id}/${season}/${episodeNumber}`;
+    }
     showPlayerPage();
+}
+
+function playMovie() {
+    loadEpisode();
+    addToWatchHistory(currentMedia);
 }
 
 function playEpisode(episodeNumber) {
     loadEpisode(episodeNumber);
+    addToWatchHistory(currentMedia);
     document.getElementById('episodeSelect').value = episodeNumber;
 }
 
@@ -482,25 +507,18 @@ function showPlayerPage() {
 }
 
 // Navigation
-// Replace the existing goBack function with this:
 function goBack() {
-  // Show hero section again
-  document.getElementById('heroSection').style.display = 'block';
-  
-  // Show all regular content
-  document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
-    el.style.display = '';
-  });
-  
-  // Hide search results
-  document.querySelectorAll('.search-results-title, .search-results').forEach(el => {
-    el.style.display = 'none';
-  });
-  
-  // Restore page visibility
-  homePage.style.display = 'block';
-  detailsPage.style.display = 'none';
-  playerPage.style.display = 'none';
+    document.getElementById('heroSection').style.display = 'block';
+    document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
+        el.style.display = '';
+    });
+    document.querySelectorAll('.search-results-title, .search-results').forEach(el => {
+        el.style.display = 'none';
+    });
+    homePage.style.display = 'block';
+    detailsPage.style.display = 'none';
+    playerPage.style.display = 'none';
+    loadHistory();
 }
 
 // Modal Handling
@@ -544,7 +562,7 @@ function renderDetails(details) {
                         <select id="seasonSelect"></select>
                     </div>
                     <div class="episode-list" id="episodeList"></div>
-                ` : `<button class="watch-btn" onclick="showPlayerPage()">▶ Play Now</button>`}
+` : `<button class="watch-btn" onclick="playMovie()">▶ Play Now</button>`}
             </div>
         </div>
     `;
