@@ -655,3 +655,34 @@ body {
     cursor: pointer;
     margin-top: 1rem;
 }
+
+/* Add at the end of the file */
+.trakt-integration {
+  margin: 1.5rem 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 1.5rem;
+}
+
+.trakt-login-btn {
+  background: var(--surface);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.trakt-login-btn:hover {
+  border-color: var(--primary);
+  background: rgba(51, 255, 85, 0.1);
+}
+
+.trakt-login-btn svg {
+  width: 20px;
+  height: 20px;
+}
