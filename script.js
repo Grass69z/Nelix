@@ -7,6 +7,7 @@ const CACHE_TTL = {
     SEARCH: 900000 // 15 minutes
 };
 
+let userAccessToken = localStorage.getItem('trakt_token') || null;
 let TMDB_API_KEY = localStorage.getItem('tmdb_api_key') || '';
 let currentMedia = null;
 let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
@@ -23,6 +24,9 @@ const apiKeyInput = document.getElementById('apiKeyInput');
 const homePage = document.getElementById('homePage');
 const detailsPage = document.getElementById('detailsPage');
 const playerPage = document.getElementById('playerPage');
+const TRAKT_CLIENT_SECRET = '175984d8d1d1e637fadb34a8aa08db1b58886ecfc3af87eaff8a08b90c8ea52c';
+const TRAKT_CLIENT_ID = 'd4d977adaae19f8b12558491f0f20a6156bb2a39a0eb7449898a0fbfeb5deda3';
+const TRAKT_REDIRECT_URI = window.location.href.split('?')[0];
 
 // Event Listeners
 searchBtn.addEventListener('click', searchMedia);
@@ -30,6 +34,7 @@ backBtn && backBtn.addEventListener('click', goBack);
 settingsBtn.addEventListener('click', openSettings);
 saveSettingsBtn.addEventListener('click', saveSettings);
 searchInput.addEventListener('input', debounce(searchMedia, 500));
+document.getElementById('traktLoginBtn').addEventListener('click', handleTraktAuth);
 
 // Initialize
 window.onload = () => {
@@ -39,10 +44,28 @@ window.onload = () => {
     } else {
         loadContent();
     }
-     watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
-       if (!Array.isArray(watchHistory)) {
+    
+    watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
+    if (!Array.isArray(watchHistory)) {
         watchHistory = [];
         localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const traktCode = urlParams.get('code');
+    
+    if (traktCode) {
+        exchangeCodeForToken(traktCode).then(success => {
+            if (success) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                loadContent();
+                loadRecommendations();
+            }
+        });
+    }
+
+    if (userAccessToken) {
+        loadRecommendations();
     }
 };
 
@@ -70,12 +93,11 @@ function setCachedData(key, data) {
 }
 
 function obfuscateText(text) {
-  if (!text) return '';
-  return text.split('').map(char => {
-    // Preserve spaces between words
-    if (char === ' ') return '<span class="space"></span>';
-    return `<span>${char}</span>`;
-  }).join('');
+    if (!text) return '';
+    return text.split('').map(char => {
+        if (char === ' ') return '<span class="space"></span>';
+        return `<span>${char}</span>`;
+    }).join('');
 }
 
 // Performance Optimized Functions
@@ -102,7 +124,6 @@ async function loadSection(sectionId, endpoint, cacheType) {
             const response = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_API_KEY}`);
             const json = await response.json();
             data = json.results;
-            // Assign media_type for popular movies and shows
             if (endpoint.startsWith('movie/')) {
                 data = data.map(item => ({ ...item, media_type: 'movie' }));
             } else if (endpoint.startsWith('tv/')) {
@@ -118,11 +139,10 @@ async function loadSection(sectionId, endpoint, cacheType) {
     return data;
 }
 
-// Start Hero Carousel – updates click event on every slide
+// Hero Carousel
 function startHeroCarousel() {
     let currentIndex = 0;
     const heroCard = document.querySelector('.hero-card');
-    // Set initial click event using the first item
     heroCard.onclick = () => {
         const currentItem = trendingItems[currentIndex];
         currentMedia = {
@@ -132,6 +152,7 @@ function startHeroCarousel() {
         };
         showDetailsPage(currentMedia);
     };
+    
     setInterval(() => {
         heroCard.classList.add('fade');
         setTimeout(() => {
@@ -139,9 +160,9 @@ function startHeroCarousel() {
             const nextItem = trendingItems[currentIndex];
             heroCard.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${nextItem.backdrop_path})`;
             heroCard.querySelector('.hero-overlay h1').textContent = nextItem.title || nextItem.name;
-heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.overview)
-  .replace(/(<\/span>)(?=\s*<span class="space">)/g, '$1 '); 
-            // Update click event so it goes to the correct movie/show
+            heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.overview)
+                .replace(/(<\/span>)(?=\s*<span class="space">)/g, '$1 ');
+                
             heroCard.onclick = () => {
                 currentMedia = {
                     id: nextItem.id,
@@ -151,11 +172,11 @@ heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.ove
                 showDetailsPage(currentMedia);
             };
             heroCard.classList.remove('fade');
-        }, 500); // Matches CSS transition duration
-    }, 15000); // 15 seconds
+        }, 500);
+    }, 15000);
 }
 
-// Search with Debouncing
+// Search Functions
 function debounce(func, timeout = 300) {
     let timer;
     return (...args) => {
@@ -165,12 +186,15 @@ function debounce(func, timeout = 300) {
 }
 
 searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        searchMedia();
-    }
+    if (e.key === 'Enter') searchMedia();
 });
 
-// Enhanced Card Creation
+// Note: searchMedia is not implemented; assuming it's elsewhere or needs addition
+function searchMedia() {
+    console.log('Search functionality not implemented yet');
+}
+
+// Card Creation
 function createCard(item) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -178,23 +202,22 @@ function createCard(item) {
     const historyItem = watchHistory.find(h => h.id === item.id && h.type === item.media_type);
     const progress = historyItem ? historyItem.progress : 0;
 
-card.innerHTML = `
-  ${historyItem ? `<div class="progress-bar" style="width: ${progress}%"></div>` : ''}
-  <img class="poster" 
-      src="${item.poster_path 
-          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-          : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
-      alt="${item.title || item.name}"
-      loading="lazy">
-  <div class="card-overlay">
-    <h3 class="card-title">${item.title || item.name}</h3>
-    <div class="media-type">${item.media_type === 'movie' ? 'Movie' : 'TV Show'}</div>
-    <div class="rating">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
-    <div class="year">${getYear(item)}</div>
-    <!-- Overview text removed from here -->
-    <div class="noise-overlay"></div>
-  </div>
-`;
+    card.innerHTML = `
+        ${historyItem ? `<div class="progress-bar" style="width: ${progress}%"></div>` : ''}
+        <img class="poster" 
+            src="${item.poster_path 
+                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
+            alt="${item.title || item.name}"
+            loading="lazy">
+        <div class="card-overlay">
+            <h3 class="card-title">${item.title || item.name}</h3>
+            <div class="media-type">${item.media_type === 'movie' ? 'Movie' : 'TV Show'}</div>
+            <div class="rating">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+            <div class="year">${getYear(item)}</div>
+            <div class="noise-overlay"></div>
+        </div>
+    `;
 
     card.addEventListener('click', () => {
         currentMedia = {
@@ -208,7 +231,7 @@ card.innerHTML = `
     return card;
 }
 
-// Enhanced Details Page
+// Details Page
 async function showDetailsPage(media) {
     homePage.style.display = 'none';
     detailsPage.style.display = 'block';
@@ -228,6 +251,20 @@ async function showDetailsPage(media) {
         setCachedData(cacheKey, details);
         renderDetails(details);
         if (media.type === 'tv') renderSeasonSelector(details.seasons);
+
+        if (userAccessToken) {
+            const endpoint = media.type === 'movie' 
+                ? `/movies/${media.id}?extended=full` 
+                : `/shows/${media.id}?extended=full`;
+            
+            const traktInfo = await traktRequest(endpoint);
+            if (traktInfo) {
+                const ratingElem = document.createElement('div');
+                ratingElem.className = 'trakt-rating';
+                ratingElem.textContent = `Trakt Rating: ${traktInfo.rating} (${traktInfo.votes} votes)`;
+                document.querySelector('.meta').appendChild(ratingElem);
+            }
+        }
     } catch (error) {
         handleError(error);
         goBack();
@@ -258,157 +295,141 @@ function getYear(item) {
     return date ? date.split('-')[0] : 'N/A';
 }
 
-function goHome() {
-    // Clear search input
-    searchInput.value = '';
+// Trakt Functions
+async function handleTraktAuth() {
+    if (userAccessToken) {
+        localStorage.removeItem('trakt_token');
+        userAccessToken = null;
+        document.getElementById('traktButtonText').textContent = 'Login with Trakt';
+        showError('Logged out from Trakt', 'warning');
+        return;
+    }
     
-    // Reset to default view
-    goBack();
-    
-    // Ensure all pages are hidden except home
-    homePage.style.display = 'block';
-    detailsPage.style.display = 'none';
-    playerPage.style.display = 'none';
-    
-    // Reload initial content
-    loadContent();
+    const authUrl = `https://api.trakt.tv/oauth/authorize?response_type=code&client_id=${TRAKT_CLIENT_ID}&redirect_uri=${encodeURIComponent(TRAKT_REDIRECT_URI)}`;
+    window.location.href = authUrl;
 }
 
-// Settings Functions
-function openSettings() {
-    settingsModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; 
-    apiKeyInput.value = TMDB_API_KEY;
-}
-
-function saveSettings() {
-    TMDB_API_KEY = apiKeyInput.value.trim();
-    localStorage.setItem('tmdb_api_key', TMDB_API_KEY);
-    closeModal();
-    loadContent();
-}
-
-function closeModal() {
-    settingsModal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// API Data Fetching
-async function fetchTMDBData(type, id) {
+async function exchangeCodeForToken(code) {
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}`
-        );
-        if (!response.ok) throw new Error('API request failed');
+        const response = await fetch('https://api.trakt.tv/oauth/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code,
+                client_id: TRAKT_CLIENT_ID,
+                client_secret: TRAKT_CLIENT_SECRET, // Fixed: Correct client secret
+                redirect_uri: TRAKT_REDIRECT_URI,
+                grant_type: 'authorization_code'
+            })
+        });
+        
+        if (!response.ok) throw new Error('Token exchange failed');
+        
+        const data = await response.json();
+        userAccessToken = data.access_token;
+        localStorage.setItem('trakt_token', userAccessToken);
+        return true;
+    } catch (error) {
+        showError('Trakt authentication failed', 'error');
+        return false;
+    }
+}
+
+async function traktRequest(endpoint, method = 'GET', body = null) {
+    try {
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'trakt-api-version': '2',
+                'trakt-api-key': TRAKT_CLIENT_ID,
+                'Authorization': `Bearer ${userAccessToken}`
+            }
+        };
+
+        if (body) options.body = JSON.stringify(body);
+
+        const response = await fetch(`https://api.trakt.tv${endpoint}`, options);
+        
+        if (response.status === 401) {
+            localStorage.removeItem('trakt_token');
+            userAccessToken = null;
+            showError('Session expired, please relogin', 'warning');
+            return null;
+        }
+        
         return await response.json();
     } catch (error) {
-        handleError(error);
+        showError('Trakt request failed', 'error');
         return null;
     }
 }
 
-// Section Population
-function populateSection(sectionId, items) {
-    const section = document.getElementById(sectionId);
-    section.innerHTML = '';
-    
-    items.slice(0, 10).forEach(item => {
-        const card = createCard(item);
-        section.appendChild(card);
-    });
-}
-
-// Search Functionality
-async function searchMedia() {
-    if (!TMDB_API_KEY) {
-        alert('Please set your TMDB API key in settings first!');
-        openSettings();
-        return;
-    }
-    
-    const query = searchInput.value.trim();
-    if (!query) {
-        goBack(); // Clear results if empty search
-        return;
-    }
+// History and Recommendations
+async function loadHistory() {
+    if (!userAccessToken) return;
 
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
-        );
-        const data = await response.json();
-        displayResults(data.results);
-    } catch (error) {
-        handleError(error);
-    }
-}
+        const watched = await traktRequest('/sync/watched');
+        if (!watched) return;
 
-// Replace the existing displayResults function with this:
-async function displayResults(results) {
-  // Hide hero section
-  document.getElementById('heroSection').style.display = 'none';
-  
-  // Hide all regular content
-  document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
-    el.style.display = 'none';
-  });
-  
-  // Show search result sections
-  const homePage = document.getElementById('homePage');
-  const movieGrid = homePage.querySelector('#searchMovies');
-  const showGrid = homePage.querySelector('#searchShows');
-  
-  // Clear previous results
-  movieGrid.innerHTML = '';
-  showGrid.innerHTML = '';
-  
-  // Separate movies and shows
-  const movies = results.filter(item => item.media_type === 'movie');
-  const shows = results.filter(item => item.media_type === 'tv');
-  
-  // Display movie results
-  if (movies.length > 0) {
-    document.getElementById('movieResultsTitle').style.display = 'block';
-    movies.forEach(movie => {
-      const card = createCard(movie);
-      movieGrid.appendChild(card);
-    });
-    movieGrid.style.display = 'grid';
-  }
-  
-  // Display show results
-  if (shows.length > 0) {
-    document.getElementById('showResultsTitle').style.display = 'block';
-    shows.forEach(show => {
-      const card = createCard(show);
-      showGrid.appendChild(card);
-    });
-    showGrid.style.display = 'grid';
-  }
-}
+        const grid = document.getElementById('historyGrid');
+        grid.innerHTML = '';
 
-// History Management
-async function loadHistory() {
-    const grid = document.getElementById('historyGrid');
-    grid.innerHTML = '';
-
-    for (const item of watchHistory.slice(0, 10)) {
-        const details = await fetchTMDBData(item.type, item.id);
-        if (details) {
-            const card = createCard({ ...details, media_type: item.type });
-            grid.appendChild(card);
+        const allItems = [...watched.movies, ...watched.shows];
+        
+        for (const item of allItems.slice(0, 10)) {
+            try {
+                const type = item.movie ? 'movie' : 'tv';
+                const tmdbId = item[type].ids.tmdb;
+                const details = await fetchTMDBData(type, tmdbId);
+                
+                if (details) {
+                    const card = createCard({ ...details, media_type: type });
+                    grid.appendChild(card);
+                }
+            } catch (error) {
+                console.error('Failed to load history item:', error);
+            }
         }
+    } catch (error) {
+        showError('Failed to load watch history', 'error');
     }
 }
 
-function addToWatchHistory(media) {
-    const existingIndex = watchHistory.findIndex(item => 
-        item.id === media.id && item.type === media.type
-    );
-    
-    if (existingIndex !== -1) watchHistory.splice(existingIndex, 1);
-    watchHistory.unshift({ ...media, progress: 0 });
-    localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+async function loadRecommendations() {
+    if (!userAccessToken) return;
+
+    try {
+        const recommendations = await traktRequest('/recommendations/movies');
+        if (!recommendations || !recommendations.length) return;
+
+        const existingSection = document.getElementById('traktRecommendations');
+        if (existingSection) existingSection.remove();
+
+        const section = document.createElement('div');
+        section.id = 'traktRecommendations';
+        section.innerHTML = '<h2 class="section-title">Recommended for You</h2>';
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        for (const item of recommendations.slice(0, 10)) {
+            try {
+                const details = await fetchTMDBData('movie', item.movie.ids.tmdb);
+                if (details) {
+                    const card = createCard({ ...details, media_type: 'movie' });
+                    grid.appendChild(card);
+                }
+            } catch (error) {
+                console.error('Failed to load recommendation:', error);
+            }
+        }
+
+        document.querySelector('.content-sections').prepend(section);
+        section.appendChild(grid);
+    } catch (error) {
+        showError('Failed to load recommendations', 'error');
+    }
 }
 
 // Season/Episode Handling
@@ -444,7 +465,7 @@ function populateEpisodes(seasonData) {
     const episodeList = document.getElementById('episodeList');
     episodeList.innerHTML = '';
 
-    seasonData.episodes.forEach((episode, index) => {
+    seasonData.episodes.forEach(episode => {
         const episodeCard = document.createElement('div');
         episodeCard.className = 'episode-card';
         episodeCard.innerHTML = `
@@ -455,13 +476,13 @@ function populateEpisodes(seasonData) {
                     class="episode-still"
                     loading="lazy">
                 <div class="play-overlay">
-                    <button class="watch-btn" onclick="playEpisode(${index + 1})">
+                    <button class="watch-btn" onclick="playEpisode(${episode.episode_number})">
                         ▶ Play
                     </button>
                 </div>
             </div>
             <div class="episode-info">
-                <div class="episode-number">Episode ${index + 1}</div>
+                <div class="episode-number">Episode ${episode.episode_number}</div>
                 <h3 class="episode-title">${episode.name || 'Untitled Episode'}</h3>
                 ${episode.air_date ? `
                     <div class="episode-date">
@@ -474,6 +495,17 @@ function populateEpisodes(seasonData) {
             </div>
         `;
         episodeList.appendChild(episodeCard);
+    });
+}
+
+function populateSection(sectionId, items) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    
+    section.innerHTML = '';
+    items.slice(0, 10).forEach(item => {
+        const card = createCard(item);
+        section.appendChild(card);
     });
 }
 
@@ -497,7 +529,14 @@ function playMovie() {
 function playEpisode(episodeNumber) {
     loadEpisode(episodeNumber);
     addToWatchHistory(currentMedia);
-    document.getElementById('episodeSelect').value = episodeNumber;
+}
+
+function addToWatchHistory(media) {
+    const existing = watchHistory.find(h => h.id === media.id && h.type === media.type);
+    if (!existing) {
+        watchHistory.push({ id: media.id, type: media.type, progress: 0 });
+        localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+    }
 }
 
 function showPlayerPage() {
@@ -522,6 +561,22 @@ function goBack() {
 }
 
 // Modal Handling
+function openSettings() {
+    settingsModal.style.display = 'flex';
+    apiKeyInput.value = TMDB_API_KEY;
+}
+
+function saveSettings() {
+    TMDB_API_KEY = apiKeyInput.value.trim();
+    localStorage.setItem('tmdb_api_key', TMDB_API_KEY);
+    settingsModal.style.display = 'none';
+    if (TMDB_API_KEY) loadContent();
+}
+
+function closeModal() {
+    settingsModal.style.display = 'none';
+}
+
 window.onclick = function(event) {
     if (event.target === settingsModal) {
         closeModal();
@@ -533,6 +588,19 @@ document.addEventListener('keydown', (e) => {
         closeModal();
     }
 });
+
+// TMDB Fetch Function
+async function fetchTMDBData(type, id) {
+    try {
+        const response = await fetch(
+            `https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}`
+        );
+        if (!response.ok) throw new Error('Failed to fetch TMDB data');
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+}
 
 // Initialization
 function renderDetails(details) {
@@ -562,7 +630,7 @@ function renderDetails(details) {
                         <select id="seasonSelect"></select>
                     </div>
                     <div class="episode-list" id="episodeList"></div>
-` : `<button class="watch-btn" onclick="playMovie()">▶ Play Now</button>`}
+                ` : `<button class="watch-btn" onclick="playMovie()">▶ Play Now</button>`}
             </div>
         </div>
     `;
@@ -576,14 +644,13 @@ function createHeroCard(item) {
     const hero = document.createElement('div');
     hero.className = 'hero-card';
     hero.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
-hero.innerHTML = `
-  <div class="hero-overlay">
-    <h1>${item.title || item.name}</h1>
-    <p class="text-obfuscate">${obfuscateText(item.overview)}</p>
-    <div class="noise-overlay"></div>
-  </div>
-`;
-    // Initially set click event for the first item;
+    hero.innerHTML = `
+        <div class="hero-overlay">
+            <h1>${item.title || item.name}</h1>
+            <p class="text-obfuscate">${obfuscateText(item.overview)}</p>
+            <div class="noise-overlay"></div>
+        </div>
+    `;
     hero.onclick = () => {
         currentMedia = {
             id: item.id,
