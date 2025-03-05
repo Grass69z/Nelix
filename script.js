@@ -481,10 +481,10 @@ function populateEpisodes(seasonData) {
 function loadEpisode(episodeNumber = 1) {
     const player = document.getElementById('mainPlayer');
     if (currentMedia.type === 'movie') {
-        player.src = `https://vidsrc.su/embed/movie/${currentMedia.id}`;
+        player.src = `https://iframe.pstream.org/media/tmdb-movie-${currentMedia.id}`;
     } else {
         const season = document.getElementById('seasonSelect').value;
-        player.src = `https://vidsrc.su/embed/tv/${currentMedia.id}/${season}/${episodeNumber}`;
+        player.src = `https://iframe.pstream.org/embed/tmdb-tv-${currentMedia.id}/${season}/${episodeNumber}`;
     }
     showPlayerPage();
 }
