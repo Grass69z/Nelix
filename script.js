@@ -317,20 +317,21 @@ async function exchangeCodeForToken(code) {
             body: JSON.stringify({
                 code,
                 client_id: TRAKT_CLIENT_ID,
-                client_secret: TRAKT_CLIENT_SECRET, // Fixed: Correct client secret
+                client_secret: TRAKT_CLIENT_SECRET,
                 redirect_uri: TRAKT_REDIRECT_URI,
                 grant_type: 'authorization_code'
             })
         });
-        
-        if (!response.ok) throw new Error('Token exchange failed');
-        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Trakt Error:', errorData);
+            throw new Error('Authentication failed');
+        }
         const data = await response.json();
-        userAccessToken = data.access_token;
-        localStorage.setItem('trakt_token', userAccessToken);
+        localStorage.setItem('trakt_token', data.access_token);
         return true;
     } catch (error) {
-        showError('Trakt authentication failed', 'error');
+        console.error('Error:', error);
         return false;
     }
 }
