@@ -1,9 +1,9 @@
 :root {
-    --primary: #33ff55;
-    --background: #0a0a0a;
-    --surface: #151515;
-    --text: #ffffff;
-    --text-secondary: #aaaaaa;
+    --primary: #33ff55;          /* Primary accent color (green) */
+    --background: #0a0a0a;       /* Dark background */
+    --surface: #151515;          /* Surface color for cards and modals */
+    --text: #ffffff;             /* Primary text color */
+    --text-secondary: #aaaaaa;   /* Secondary text color */
 }
 
 * {
@@ -25,7 +25,7 @@ body {
     padding: 2rem 1.5rem;
 }
 
-/* Header moved above hero */
+/* Header Styles */
 .header {
     display: flex;
     justify-content: space-between;
@@ -43,6 +43,7 @@ body {
     text-decoration: none;
 }
 
+/* Search Bar Styles */
 .search-container {
     flex: 1;
     max-width: 600px;
@@ -58,12 +59,12 @@ body {
 }
 
 .search-container:focus-within {
-    border-color: #33ff55;
+    border-color: var(--primary);
     box-shadow: 0 0 15px rgba(51, 255, 85, 0.2);
 }
 
 .search-container:focus-within .search-divider {
-    background-color: #33ff55;
+    background-color: var(--primary);
 }
 
 .search-input {
@@ -116,28 +117,57 @@ body {
     transform: scale(0.95);
 }
 
-/* Restore original settings button styling */
+/* Settings Button Styles */
 #settingsBtn {
-    background: var(--surface);
-    border: 2px solid rgba(255,255,255,0.1);
-    border-radius: 50%;
+    background: none;
+    border: none;
     padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
+
+#settingsBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .settings-btn {
     width: 24px;
     height: 24px;
     stroke: var(--text-secondary);
-    transition: transform 0.4s ease-in;
+    transition: transform 0.3s ease;
 }
-.button:hover .settings-btn {
+
+#settingsBtn:hover .settings-btn {
+    stroke: var(--primary);
     transform: rotate(180deg);
 }
 
-.btn-cont {
+/* Player Controls Styles */
+.player-controls {
     display: flex;
-    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
 }
 
+.play-next-btn {
+    background: var(--primary);
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.play-next-btn:disabled {
+    background: #444;
+    color: #777;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Content Section Styles */
 .content-sections {
     margin: 3rem 0;
 }
@@ -167,7 +197,7 @@ body {
 }
 
 .card:hover {
-  transform: translateY(-5px);
+    transform: translateY(-5px);
 }
 
 .poster {
@@ -177,23 +207,23 @@ body {
 }
 
 .card-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
-  padding: 1rem;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: white;
 }
 
 .card:hover .card-overlay {
-  opacity: 1;
+    opacity: 1;
 }
 
 .card-title {
@@ -224,6 +254,7 @@ body {
     z-index: 1;
 }
 
+/* Error Message Styles */
 .error-message {
     position: fixed;
     top: 20px;
@@ -241,6 +272,7 @@ body {
     color: #000;
 }
 
+/* Details Page Styles */
 .details-page {
     display: none;
     margin-top: 2rem;
@@ -250,7 +282,6 @@ body {
 .details-hero {
     position: relative;
     height: 50vh;
-    /* Use contain to ensure the full image is visible in details */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -295,6 +326,7 @@ body {
     border-radius: 8px;
 }
 
+/* Season Selector Styles */
 .season-selector {
     position: relative;
     margin: 2rem 0;
@@ -322,6 +354,7 @@ body {
     border-color: var(--primary);
 }
 
+/* Episode List Styles */
 .episode-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -393,7 +426,6 @@ body {
     opacity: 1;
 }
 
-/* Improved and consistent play button style */
 .watch-btn {
     background: var(--primary);
     color: #000;
@@ -410,29 +442,7 @@ body {
     box-shadow: 0 4px 12px rgba(51, 255, 85, 0.4);
 }
 
-.play-next-btn {
-    background: var(--primary);
-    color: #000;
-    padding: 0.8rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.play-next-btn:disabled {
-    background: #444;
-    color: #777;
-    cursor: not-allowed;
-}
-
-.play-next-btn:not(:disabled):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(51, 255, 85, 0.3);
-}
-
+/* Player Page Styles */
 .player-page {
     display: none;
     width: 100%;
@@ -444,7 +454,7 @@ body {
 .player-container {
     position: relative;
     width: 100%;
-    padding-top: 56.25%;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
     border-radius: 12px;
     overflow: hidden;
     background: #000;
@@ -475,10 +485,10 @@ body {
     z-index: 20;
 }
 
-/* Homepage Hero: taller and using cover to fill width */
+/* Hero Section Styles */
 .hero-section {
     position: relative;
-    height: 80vh; /* Taller hero on homepage */
+    height: 80vh;
     margin-bottom: 2rem;
     overflow: hidden;
 }
@@ -525,106 +535,75 @@ body {
     overflow: hidden;
 }
 
-/* === Text Anti-Scraping Styles === */
+/* Text Anti-Scraping Styles */
 .card-overlay p,
 .hero-overlay p,
 .episode-description {
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
-/* Replace the existing .text-obfuscate rules with this: */
 .text-obfuscate span {
-  display: inline-block;
-  position: relative;
-  transform: rotate(0.001deg);
+    display: inline-block;
+    position: relative;
+    transform: rotate(0.001deg);
 }
 
 .text-obfuscate span::after {
-  content: "\200B";
-  position: absolute;
-  left: 0;
+    content: "\200B"; /* Zero-width space */
+    position: absolute;
+    left: 0;
 }
 
-/* Specific style for space characters */
 .text-obfuscate span.space {
-  width: 0.3em;
-  transform: none; /* Remove rotation for spaces */
+    width: 0.3em;
+    transform: none;
 }
 
-/* Maintain text flow */
 .text-obfuscate {
-  white-space: pre-wrap;
-  word-spacing: normal;
+    white-space: pre-wrap;
+    word-spacing: normal;
 }
 
 .noise-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(255,255,255,0.02),
-    rgba(255,255,255,0.02) 1px,
-    transparent 1px,
-    transparent 2px
-  );
-  mix-blend-mode: overlay;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.02),
+        rgba(255,255,255,0.02) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    mix-blend-mode: overlay;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
     .details-content {
         grid-template-columns: 1fr;
         padding: 1rem;
     }
-    
     .details-content .poster {
         max-width: 220px;
         margin: 0 auto 2rem;
     }
-    
     .episode-list {
         grid-template-columns: 1fr;
     }
-    
     .back-btn {
         padding: 0.5rem 1rem;
         font-size: 0.9rem;
     }
 }
 
-/* Settings Button Styling */
-#settingsBtn {
-    background: none;
-    border: none;
-    padding: 8px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-#settingsBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.settings-btn {
-    width: 24px;
-    height: 24px;
-    stroke: var(--text-secondary);
-    transition: transform 0.3s ease;
-}
-
-#settingsBtn:hover .settings-btn {
-    stroke: var(--primary);
-    transform: rotate(180deg);
-}
-
-/* Settings Modal Styling */
+/* Settings Modal Styles */
 .settings-modal {
     position: fixed;
     top: 0;
