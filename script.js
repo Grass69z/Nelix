@@ -39,8 +39,8 @@ window.onload = () => {
     } else {
         loadContent();
     }
-     watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
-       if (!Array.isArray(watchHistory)) {
+    watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
+    if (!Array.isArray(watchHistory)) {
         watchHistory = [];
         localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
     }
@@ -50,10 +50,8 @@ window.onload = () => {
 function getCachedData(key) {
     const cached = localStorage.getItem(key);
     if (!cached) return null;
-    
     const { data, timestamp } = JSON.parse(cached);
     const now = Date.now();
-    
     if (now - timestamp > CACHE_TTL[key.split('_')[0]]) {
         localStorage.removeItem(key);
         return null;
@@ -70,12 +68,11 @@ function setCachedData(key, data) {
 }
 
 function obfuscateText(text) {
-  if (!text) return '';
-  return text.split('').map(char => {
-    // Preserve spaces between words
-    if (char === ' ') return '<span class="space"></span>';
-    return `<span>${char}</span>`;
-  }).join('');
+    if (!text) return '';
+    return text.split('').map(char => {
+        if (char === ' ') return '<span class="space"></span>';
+        return `<span>${char}</span>`;
+    }).join('');
 }
 
 // Performance Optimized Functions
@@ -102,7 +99,6 @@ async function loadSection(sectionId, endpoint, cacheType) {
             const response = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_API_KEY}`);
             const json = await response.json();
             data = json.results;
-            // Assign media_type for popular movies and shows
             if (endpoint.startsWith('movie/')) {
                 data = data.map(item => ({ ...item, media_type: 'movie' }));
             } else if (endpoint.startsWith('tv/')) {
@@ -122,7 +118,6 @@ async function loadSection(sectionId, endpoint, cacheType) {
 function startHeroCarousel() {
     let currentIndex = 0;
     const heroCard = document.querySelector('.hero-card');
-    // Set initial click event using the first item
     heroCard.onclick = () => {
         const currentItem = trendingItems[currentIndex];
         currentMedia = {
@@ -139,9 +134,7 @@ function startHeroCarousel() {
             const nextItem = trendingItems[currentIndex];
             heroCard.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${nextItem.backdrop_path})`;
             heroCard.querySelector('.hero-overlay h1').textContent = nextItem.title || nextItem.name;
-heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.overview)
-  .replace(/(<\/span>)(?=\s*<span class="space">)/g, '$1 '); 
-            // Update click event so it goes to the correct movie/show
+            heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.overview).replace(/(<\/span>)(?=\s*<span class="space">)/g, '$1 ');
             heroCard.onclick = () => {
                 currentMedia = {
                     id: nextItem.id,
@@ -151,8 +144,8 @@ heroCard.querySelector('.hero-overlay p').innerHTML = obfuscateText(nextItem.ove
                 showDetailsPage(currentMedia);
             };
             heroCard.classList.remove('fade');
-        }, 500); // Matches CSS transition duration
-    }, 15000); // 15 seconds
+        }, 500);
+    }, 15000);
 }
 
 // Search with Debouncing
@@ -174,28 +167,22 @@ searchInput.addEventListener('keypress', (e) => {
 function createCard(item) {
     const card = document.createElement('div');
     card.className = 'card';
-    
     const historyItem = watchHistory.find(h => h.id === item.id && h.type === item.media_type);
     const progress = historyItem ? historyItem.progress : 0;
-
-card.innerHTML = `
-  ${historyItem ? `<div class="progress-bar" style="width: ${progress}%"></div>` : ''}
-  <img class="poster" 
-      src="${item.poster_path 
-          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-          : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
-      alt="${item.title || item.name}"
-      loading="lazy">
-  <div class="card-overlay">
-    <h3 class="card-title">${item.title || item.name}</h3>
-    <div class="media-type">${item.media_type === 'movie' ? 'Movie' : 'TV Show'}</div>
-    <div class="rating">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
-    <div class="year">${getYear(item)}</div>
-    <!-- Overview text removed from here -->
-    <div class="noise-overlay"></div>
-  </div>
-`;
-
+    card.innerHTML = `
+        ${historyItem ? `<div class="progress-bar" style="width: ${progress}%"></div>` : ''}
+        <img class="poster" 
+            src="${item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
+            alt="${item.title || item.name}"
+            loading="lazy">
+        <div class="card-overlay">
+            <h3 class="card-title">${item.title || item.name}</h3>
+            <div class="media-type">${item.media_type === 'movie' ? 'Movie' : 'TV Show'}</div>
+            <div class="rating">⭐ ${item.vote_average?.toFixed(1) || 'N/A'}</div>
+            <div class="year">${getYear(item)}</div>
+            <div class="noise-overlay"></div>
+        </div>
+    `;
     card.addEventListener('click', () => {
         currentMedia = {
             id: item.id,
@@ -204,7 +191,6 @@ card.innerHTML = `
         };
         showDetailsPage(currentMedia);
     });
-
     return card;
 }
 
@@ -212,19 +198,28 @@ card.innerHTML = `
 async function showDetailsPage(media) {
     homePage.style.display = 'none';
     detailsPage.style.display = 'block';
-    
     const cacheKey = `DETAILS_${media.type}_${media.id}`;
     const cachedData = getCachedData(cacheKey);
-    
     if (cachedData) {
+        currentMedia = {
+            id: media.id,
+            type: media.type,
+            title: cachedData.title || cachedData.name,
+            seasons: cachedData.seasons // Store seasons for TV shows
+        };
         renderDetails(cachedData);
         if (media.type === 'tv') renderSeasonSelector(cachedData.seasons);
         return;
     }
-
     try {
         const details = await fetchTMDBData(media.type, media.id);
         details.seasons = details.seasons || [];
+        currentMedia = {
+            id: media.id,
+            type: media.type,
+            title: details.title || details.name,
+            seasons: details.seasons // Store seasons for TV shows
+        };
         setCachedData(cacheKey, details);
         renderDetails(details);
         if (media.type === 'tv') renderSeasonSelector(details.seasons);
@@ -238,7 +233,6 @@ async function showDetailsPage(media) {
 function handleError(error, cacheKey = null) {
     console.error('Error:', error);
     showError(`Error: ${error.message}`);
-    
     if (cacheKey && getCachedData(cacheKey)) {
         showError('Showing cached data', 'warning');
     }
@@ -259,25 +253,17 @@ function getYear(item) {
 }
 
 function goHome() {
-    // Clear search input
     searchInput.value = '';
-    
-    // Reset to default view
-    goBack();
-    
-    // Ensure all pages are hidden except home
     homePage.style.display = 'block';
     detailsPage.style.display = 'none';
     playerPage.style.display = 'none';
-    
-    // Reload initial content
     loadContent();
 }
 
 // Settings Functions
 function openSettings() {
     settingsModal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; 
+    document.body.style.overflow = 'hidden';
     apiKeyInput.value = TMDB_API_KEY;
 }
 
@@ -296,9 +282,7 @@ function closeModal() {
 // API Data Fetching
 async function fetchTMDBData(type, id) {
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}`
-        );
+        const response = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_API_KEY}`);
         if (!response.ok) throw new Error('API request failed');
         return await response.json();
     } catch (error) {
@@ -311,7 +295,6 @@ async function fetchTMDBData(type, id) {
 function populateSection(sectionId, items) {
     const section = document.getElementById(sectionId);
     section.innerHTML = '';
-    
     items.slice(0, 10).forEach(item => {
         const card = createCard(item);
         section.appendChild(card);
@@ -325,17 +308,13 @@ async function searchMedia() {
         openSettings();
         return;
     }
-    
     const query = searchInput.value.trim();
     if (!query) {
-        goBack(); // Clear results if empty search
+        goBack();
         return;
     }
-
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
-        );
+        const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
         const data = await response.json();
         displayResults(data.results);
     } catch (error) {
@@ -343,55 +322,33 @@ async function searchMedia() {
     }
 }
 
-// Replace the existing displayResults function with this:
 async function displayResults(results) {
-  // Hide hero section
-  document.getElementById('heroSection').style.display = 'none';
-  
-  // Hide all regular content
-  document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
-    el.style.display = 'none';
-  });
-  
-  // Show search result sections
-  const homePage = document.getElementById('homePage');
-  const movieGrid = homePage.querySelector('#searchMovies');
-  const showGrid = homePage.querySelector('#searchShows');
-  
-  // Clear previous results
-  movieGrid.innerHTML = '';
-  showGrid.innerHTML = '';
-  
-  // Separate movies and shows
-  const movies = results.filter(item => item.media_type === 'movie');
-  const shows = results.filter(item => item.media_type === 'tv');
-  
-  // Display movie results
-  if (movies.length > 0) {
-    document.getElementById('movieResultsTitle').style.display = 'block';
-    movies.forEach(movie => {
-      const card = createCard(movie);
-      movieGrid.appendChild(card);
+    document.getElementById('heroSection').style.display = 'none';
+    document.querySelectorAll('.content-sections > .grid, .section-title').forEach(el => {
+        el.style.display = 'none';
     });
-    movieGrid.style.display = 'grid';
-  }
-  
-  // Display show results
-  if (shows.length > 0) {
-    document.getElementById('showResultsTitle').style.display = 'block';
-    shows.forEach(show => {
-      const card = createCard(show);
-      showGrid.appendChild(card);
-    });
-    showGrid.style.display = 'grid';
-  }
+    const movieGrid = document.getElementById('searchMovies');
+    const showGrid = document.getElementById('searchShows');
+    movieGrid.innerHTML = '';
+    showGrid.innerHTML = '';
+    const movies = results.filter(item => item.media_type === 'movie');
+    const shows = results.filter(item => item.media_type === 'tv');
+    if (movies.length > 0) {
+        document.getElementById('movieResultsTitle').style.display = 'block';
+        movies.forEach(movie => movieGrid.appendChild(createCard(movie)));
+        movieGrid.style.display = 'grid';
+    }
+    if (shows.length > 0) {
+        document.getElementById('showResultsTitle').style.display = 'block';
+        shows.forEach(show => showGrid.appendChild(createCard(show)));
+        showGrid.style.display = 'grid';
+    }
 }
 
 // History Management
 async function loadHistory() {
     const grid = document.getElementById('historyGrid');
     grid.innerHTML = '';
-
     for (const item of watchHistory.slice(0, 10)) {
         const details = await fetchTMDBData(item.type, item.id);
         if (details) {
@@ -402,10 +359,7 @@ async function loadHistory() {
 }
 
 function addToWatchHistory(media) {
-    const existingIndex = watchHistory.findIndex(item => 
-        item.id === media.id && item.type === media.type
-    );
-    
+    const existingIndex = watchHistory.findIndex(item => item.id === media.id && item.type === media.type);
     if (existingIndex !== -1) watchHistory.splice(existingIndex, 1);
     watchHistory.unshift({ ...media, progress: 0 });
     localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
@@ -418,21 +372,17 @@ function renderSeasonSelector(seasons) {
         .filter(s => s.season_number > 0)
         .map(s => `<option value="${s.season_number}">Season ${s.season_number}</option>`)
         .join('');
-    
     seasonSelect.addEventListener('change', async () => {
         const seasonNumber = seasonSelect.value;
         currentSeasonEpisodes = await fetchEpisodes(currentMedia.id, seasonNumber);
         populateEpisodes(currentSeasonEpisodes);
     });
-    
     seasonSelect.dispatchEvent(new Event('change'));
 }
 
 async function fetchEpisodes(tvId, seasonNumber) {
     try {
-        const response = await fetch(
-            `https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`
-        );
+        const response = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
         return await response.json();
     } catch (error) {
         handleError(error);
@@ -443,34 +393,22 @@ async function fetchEpisodes(tvId, seasonNumber) {
 function populateEpisodes(seasonData) {
     const episodeList = document.getElementById('episodeList');
     episodeList.innerHTML = '';
-
     seasonData.episodes.forEach((episode, index) => {
         const episodeCard = document.createElement('div');
         episodeCard.className = 'episode-card';
         episodeCard.innerHTML = `
             <div class="episode-still-container">
-                <img src="${episode.still_path 
-                    ? `https://image.tmdb.org/t/p/w400${episode.still_path}`
-                    : 'https://via.placeholder.com/400x225?text=No+Image'}" 
-                    class="episode-still"
-                    loading="lazy">
+                <img src="${episode.still_path ? `https://image.tmdb.org/t/p/w400${episode.still_path}` : 'https://via.placeholder.com/400x225?text=No+Image'}" 
+                    class="episode-still" loading="lazy">
                 <div class="play-overlay">
-                    <button class="watch-btn" onclick="playEpisode(${index + 1})">
-                        ▶ Play
-                    </button>
+                    <button class="watch-btn" onclick="playEpisode(${index + 1})">▶ Play</button>
                 </div>
             </div>
             <div class="episode-info">
                 <div class="episode-number">Episode ${index + 1}</div>
                 <h3 class="episode-title">${episode.name || 'Untitled Episode'}</h3>
-                ${episode.air_date ? `
-                    <div class="episode-date">
-                        ${new Date(episode.air_date).toLocaleDateString()}
-                    </div>
-                ` : ''}
-                ${episode.overview ? `
-                    <p class="episode-description">${episode.overview}</p>
-                ` : ''}
+                ${episode.air_date ? `<div class="episode-date">${new Date(episode.air_date).toLocaleDateString()}</div>` : ''}
+                ${episode.overview ? `<p class="episode-description">${episode.overview}</p>` : ''}
             </div>
         `;
         episodeList.appendChild(episodeCard);
@@ -478,26 +416,30 @@ function populateEpisodes(seasonData) {
 }
 
 // Player Functions
-function loadEpisode(episodeNumber = 1) {
+function loadEpisode(season, episodeNumber) {
     const player = document.getElementById('mainPlayer');
     if (currentMedia.type === 'movie') {
         player.src = `https://iframe.pstream.org/media/tmdb-movie-${currentMedia.id}`;
     } else {
-        const season = document.getElementById('seasonSelect').value;
         player.src = `https://iframe.pstream.org/embed/tmdb-tv-${currentMedia.id}/${season}/${episodeNumber}`;
+        currentMedia.season = season;
+        currentMedia.episode = episodeNumber;
     }
     showPlayerPage();
+    if (currentMedia.type === 'tv') {
+        updatePlayNextButton();
+    }
 }
 
 function playMovie() {
-    loadEpisode();
+    loadEpisode(null, null);
     addToWatchHistory(currentMedia);
 }
 
 function playEpisode(episodeNumber) {
-    loadEpisode(episodeNumber);
+    const season = document.getElementById('seasonSelect').value;
+    loadEpisode(season, episodeNumber);
     addToWatchHistory(currentMedia);
-    document.getElementById('episodeSelect').value = episodeNumber;
 }
 
 function showPlayerPage() {
@@ -546,9 +488,7 @@ function renderDetails(details) {
         </div>
         <div class="details-content">
             <img class="poster" 
-                src="${details.poster_path 
-                    ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
-                    : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
+                src="${details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster'}" 
                 alt="${details.title || details.name}"
                 loading="lazy">
             <div>
@@ -562,7 +502,7 @@ function renderDetails(details) {
                         <select id="seasonSelect"></select>
                     </div>
                     <div class="episode-list" id="episodeList"></div>
-` : `<button class="watch-btn" onclick="playMovie()">▶ Play Now</button>`}
+                ` : `<button class="watch-btn" onclick="playMovie()">▶ Play Now</button>`}
             </div>
         </div>
     `;
@@ -576,14 +516,13 @@ function createHeroCard(item) {
     const hero = document.createElement('div');
     hero.className = 'hero-card';
     hero.style.backgroundImage = `url(https://image.tmdb.org/t/p/original${item.backdrop_path})`;
-hero.innerHTML = `
-  <div class="hero-overlay">
-    <h1>${item.title || item.name}</h1>
-    <p class="text-obfuscate">${obfuscateText(item.overview)}</p>
-    <div class="noise-overlay"></div>
-  </div>
-`;
-    // Initially set click event for the first item;
+    hero.innerHTML = `
+        <div class="hero-overlay">
+            <h1>${item.title || item.name}</h1>
+            <p class="text-obfuscate">${obfuscateText(item.overview)}</p>
+            <div class="noise-overlay"></div>
+        </div>
+    `;
     hero.onclick = () => {
         currentMedia = {
             id: item.id,
@@ -593,4 +532,42 @@ hero.innerHTML = `
         showDetailsPage(currentMedia);
     };
     return hero;
+}
+
+// Play Next Episode Functions
+function hasNextEpisode() {
+    if (currentMedia.type !== 'tv') return false;
+    if (currentMedia.episode < currentSeasonEpisodes.episodes.length) return true;
+    const currentSeasonNumber = parseInt(currentMedia.season);
+    const nextSeasonNumber = currentSeasonNumber + 1;
+    return currentMedia.seasons.some(s => s.season_number === nextSeasonNumber);
+}
+
+function updatePlayNextButton() {
+    const playerControls = document.getElementById('playerControls');
+    playerControls.innerHTML = '';
+    if (currentMedia.type === 'tv') {
+        const button = document.createElement('button');
+        button.className = 'play-next-btn';
+        button.textContent = 'Play Next Episode';
+        if (hasNextEpisode()) {
+            button.onclick = playNextEpisode;
+        } else {
+            button.disabled = true;
+            button.style.opacity = '0.5';
+        }
+        playerControls.appendChild(button);
+    }
+}
+
+async function playNextEpisode() {
+    if (currentMedia.episode < currentSeasonEpisodes.episodes.length) {
+        loadEpisode(currentMedia.season, currentMedia.episode + 1);
+    } else {
+        const nextSeasonNumber = parseInt(currentMedia.season) + 1;
+        if (currentMedia.seasons.some(s => s.season_number === nextSeasonNumber)) {
+            currentSeasonEpisodes = await fetchEpisodes(currentMedia.id, nextSeasonNumber);
+            loadEpisode(nextSeasonNumber.toString(), 1);
+        }
+    }
 }
